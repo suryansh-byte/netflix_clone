@@ -1,0 +1,11 @@
+.head{
+    background-blend-mode: luminosity;
+    font-size: medium;
+    glyph-orientation-horizontal: 1grad;
+    border-radius: 0cap;
+    glow:purple ;
+    motion-rotation: auto;
+    glow:purple;
+    mask-image: -moz-element();
+    position: relative;
+}

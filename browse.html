@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Browse - Netflix Clone</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css?family=Helvetica:400,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  
+  <style>
+    body {
+      margin: 0;
+      background: #141414;
+      color: #fff;
+      font-family: 'Helvetica', Arial, sans-serif;
+      position: relative;
+      overflow-x: hidden;
+    }
+    body.modal-open {
+      overflow: hidden;
+    }
+    .footer {
+      background: #181818;
+      color: #757577;
+      padding: 40px 0;
+      text-align: center;
+      border-top: 8px solid #222;
+      margin-top: 60px;
+    }
+    .footer-content { max-width: 800px; margin: 0 auto; }
+    .footer-links {
+      list-style: none; padding: 0; margin: 18px 0;
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;
+    }
+    .footer-links a { color: #757575; text-decoration: none; font-size: 0.98rem; }
+    .footer-links a:hover { color: #fff; }
+
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85); z-index: 1000;
+      display: none; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active { display: flex; opacity: 1; }
+    .modal-content {
+      background: #1c1c1c; border-radius: 8px; width: 80%;
+      max-width: 1100px; height: 60vh; display: flex;
+      position: relative; overflow: hidden;
+      transform: scale(0.9); transition: transform 0.3s ease;
+    }
+    .modal-overlay.active .modal-content { transform: scale(1); }
+    .modal-close {
+      position: absolute; top: 10px; right: 15px; font-size: 2.5rem;
+      font-weight: bold; background: none; border: none;
+      color: #fff; cursor: pointer; z-index: 1002;
+    }
+    .modal-close:hover { color: #e50914; }
+    .modal-left { flex: 1.5; background: #000; }
+    .modal-right { flex: 1; padding: 25px; overflow-y: auto; }
+    .modal-video { width: 100%; height: 100%; border: none; }
+    .modal-info h3 { font-size: 1.8rem; margin: 0 0 15px 0; }
+    .modal-info h4 { font-size: 1.2rem; margin: 20px 0 10px 0; color: #b0b0b0; }
+    .modal-info p { font-size: 0.9rem; line-height: 1.6; color: #b0b0b0; }
+    .modal-info .rating .stars { font-size: 1.5rem; color: #f3c623; }
+
+    /* --- NEW STYLES FOR BROWSE PAGE --- */
+
+    /* Logged-in Navbar */
+    .navbar-browse {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 60px;
+      height: 70px;
+      background: linear-gradient(to bottom, rgba(20,20,20,0.7) 0%, rgba(20,20,20,0) 100%);
+      position: fixed;
+      top: 0;
+      width: 100%;
+      box-sizing: border-box;
+      z-index: 10;
+      transition: background 0.3s;
+    }
+    .navbar-browse.scrolled {
+        background: #141414;
+    }
+    .navbar-left { display: flex; align-items: center; gap: 25px; }
+    .navbar-left img { height: 30px; }
+    .navbar-links { display: flex; gap: 20px; list-style: none; padding: 0; margin: 0; }
+    .navbar-links a { color: #e5e5e5; text-decoration: none; font-weight: bold; font-size: 0.9rem; }
+    .navbar-links a:hover { color: #b3b3b3; }
+
+    .navbar-right { display: flex; align-items: center; gap: 20px; }
+    .navbar-right .icon { font-size: 1.2rem; cursor: pointer; }
+    .profile-icon { width: 32px; height: 32px; border-radius: 4px; background: #e50914; cursor: pointer; }
+    
+    /* Hero Section */
+    .hero-section {
+      height: 80vh;
+      background-size: cover;
+      background-position: center top;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-left: 60px;
+      color: #fff;
+    }
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(to right, rgba(20,20,20,0.8) 30%, transparent 70%);
+    }
+    .hero-section::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; width: 100%; height: 140px;
+        background: linear-gradient(to top, #141414 20%, transparent 100%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 50%;
+    }
+    .hero-title {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .hero-description {
+      font-size: 1.2rem;
+      line-height: 1.5;
+      margin-bottom: 30px;
+      max-width: 600px;
+    }
+    .hero-buttons { display: flex; gap: 10px; }
+    .hero-btn {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 4px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-play { background: #fff; color: #141414; }
+    .btn-info { background: rgba(109, 109, 110, 0.7); color: #fff; }
+    .btn-play:hover { background: rgba(255,255,255,0.8); }
+    .btn-info:hover { background: rgba(109, 109, 110, 0.4); }
+
+    /* Movie Rows */
+    .browse-container {
+      padding-top: 0; /* Hero covers this */
+      margin-top: -140px; /* Pulls rows up over the hero gradient */
+      position: relative;
+      z-index: 3;
+    }
+    .movie-row {
+      margin-bottom: 40px;
+    }
+    .movie-row h2 {
+      font-size: 1.4rem;
+      color: #e5e5e5;
+      margin: 0 0 15px 60px;
+    }
+    
+    /* Copied & adapted from your .trending-wrapper */
+    .carousel-wrapper {
+      position: relative;
+    }
+    .scroll-container {
+      display: flex;
+      overflow-x: scroll;
+      padding: 0 60px;
+      gap: 10px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      scroll-behavior: smooth;
+    }
+    .scroll-container::-webkit-scrollbar { display: none; }
+
+    .scroll-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 5;
+      background: rgba(20, 20, 20, 0.5);
+      border: none;
+      color: #fff;
+      font-size: 2.5rem;
+      cursor: pointer;
+      height: 150px; /* Taller for posters */
+      width: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      line-height: 1;
+      padding-bottom: 5px;
+      border-radius: 4px;
+      opacity: 0;
+    }
+    .carousel-wrapper:hover .scroll-btn {
+        opacity: 1;
+    }
+    .scroll-btn:hover { background: rgba(20, 20, 20, 0.8); }
+    .scroll-btn.left { left: 0; }
+    .scroll-btn.right { right: 0; }
+
+    .movie-poster {
+      flex: 0 0 auto;
+      width: 260px; /* Wider for 16:9 posters */
+      height: 146px; /* 16:9 aspect ratio */
+      position: relative;
+      scroll-snap-align: start;
+      cursor: pointer;
+      transition: transform 0.3s ease, z-index 0.3s ease;
+      background: #333; /* Placeholder color */
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .movie-poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .movie-poster:hover {
+      transform: scale(1.1);
+      z-index: 5;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1000px) {
+      .navbar-links { display: none; }
+      .hero-section { padding-left: 20px; }
+      .hero-content { max-width: 70%; }
+      .hero-title { font-size: 2rem; }
+      .hero-description { font-size: 1rem; max-width: 100%; }
+      .movie-row h2 { margin-left: 20px; }
+      .scroll-container { padding: 0 20px; }
+    }
+    @media (max-width: 700px) {
+      .navbar-browse { padding: 0 20px; }
+      .scroll-btn { display: none; } /* Hide on touch devices */
+      .movie-poster { width: 200px; height: 112px; }
+      .modal-content { flex-direction: column; width: 90%; height: 80vh; }
+      .modal-left { flex: 1; min-height: 250px; }
+      .modal-right { flex: 1; }
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="navbar-browse" id="navbar">
+    <div class="navbar-left">
+      <a href="index.html">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix logo">
+      </a>
+      <ul class="navbar-links">
+        <li><a href="#">Home</a></li>
+        <li><a href="#">TV Shows</a></li>
+        <li><a href="#">Movies</a></li>
+        <li><a href="#">New & Popular</a></li>
+        <li><a href="#">My List</a></li>
+      </ul>
+    </div>
+    <div class="navbar-right">
+      <i class="icon fa-solid fa-search"></i>
+      <i class="icon fa-solid fa-bell"></i>
+      <div class="profile-icon"></div>
+    </div>
+  </div>
+
+  <section class="hero-section" id="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title" id="hero-title">Stranger Things</h1>
+      <p class="hero-description" id="hero-description">
+        When a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces, and one strange little girl.
+      </p>
+      <div class="hero-buttons">
+        <button class="hero-btn btn-play"><i class="fa-solid fa-play"></i> Play</button>
+        <button class="hero-btn btn-info" id="hero-info-btn"><i class="fa-solid fa-circle-info"></i> More Info</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="browse-container" id="browse-container">
+    </div>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <p>Questions? Call <a href="tel:000-800-919-1694">000-800-919-1694</a></p>
+      <ul class="footer-links">
+        <li><a href="faq.html">FAQ</a></li>
+        <li><a href="faq.html">Help Center</a></li>
+        <li><a href="#">Terms of Use</a></li>
+        <li><a href="#">Privacy</a></li>
+        <li><a href="#">Cookie Preferences</a></li>
+        <li><a href="faq.html">Corporate Information</a></li>
+      </ul>
+      <p>Netflix India</p>
+    </div>
+  </footer>
+
+  <div id="movie-modal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close" id="modal-close-btn">&times;</button>
+        <div class="modal-left">
+            <iframe 
+                id="modal-video"
+                class="modal-video" 
+                src="" 
+                title="YouTube video player" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen>
+            </iframe>
+        </div>
+        <div class="modal-right">
+            <div class="modal-info">
+                <h3 id="modal-title">Movie Title</h3>
+                <div class="rating">
+                    <h4>RATING</h4>
+                    <div class="stars" id="modal-stars"></div>
+                </div>
+                <h4>ABOUT</h4>
+                <div id="modal-about"></div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+
+  <script>
+    // --- THIS IS THE "COMPLEX DATA" - THE SINGLE SOURCE OF TRUTH ---
+    // All 120+ movies are stored here.
+    // I have included your 10 movies (as m1-m10)
+    // I have added 15 new, real movies with posters/trailers (n1-n15)
+    // The rest (d1-d100) are auto-generated dummies to reach 125+
+    const movieData = {
+        // --- YOUR 10 MOVIES ---
+        "m1": {
+          title: "Saiyaara",
+          videoSrc: "https://www.youtube.com/embed/9r-tT5IN0vg",
+          poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTWrIFfFfObNqbFBv7FevSl0TfrGuvu51KoVA&s",
+          rating: 5,
+          about: `<p>A music-driven romance between a rising musician (Krish) and a poet (Vaani)...</p>`
+        },
+        "m2": {
+          title: "Good Bad Ugly",
+          videoSrc: "https://www.youtube.com/embed/XkLRfH1oF3I",
+          poster: "https://content.tupaki.com/en/feeds/2025/03/01/714323-whatsappimage2025-03-01at1923374daf898d.webp",
+          rating: 4,
+          about: `<p>After spending years in prison, a former gangster seeks to leave that life behind...</p>`
+        },
+        "m3": {
+          title: "War 2",
+          videoSrc: "https://www.youtube.com/embed/6Wy-Du0iHHU",
+          poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS85i0wbv8XouZy_zQNcGztq6Y-bcaQ3922C97bhUucOuQi8oKa673kCix4KeE1MGIndJA&usqp=CAU",
+          rating: 5,
+          about: `<p>The next chapter in the YRF Spy Universe. A former top agent (Kabir) has gone rogue...</p>`
+        },
+        "m4": {
+          title: "Raid 2", videoSrc: "", rating: 4,
+          poster: "https://m.media-amazon.com/images/M/MV5BOTI4YWMzOGYtODkzYS00NTEyLWFmMzYtMzJkOGZmOWZlNThhXkEyXkFqcGc@._V1_.jpg",
+          about: "<p>Details for this movie are coming soon.</p>"
+        },
+        "m5": {
+          title: "Thamma", videoSrc: "", rating: 5,
+          poster: "https://assets-in.bmscdn.com/iedb/movies/images/mobile/thumbnail/xlarge/thamma-et00443268-1759421603.jpg",
+          about: "<p>Details for this movie are coming soon.</p>"
+        },
+        "m6": {
+          title: "Kantara-Chp 1", videoSrc: "", rating: 5,
+          poster: "https://m.media-amazon.com/images/M/MV5BNDU2ZTYxYTMtMjhlZC00ZjEwLThhNDUtMzdlNWM4ZDcyYTM1XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+          about: "<p>Details for this movie are coming soon.</p>"
+        },
+        "m7": {
+          title: "Son of Sardaar 2", videoSrc: "", rating: 3,
+          poster: "https://upload.wikimedia.org/wikipedia/en/4/41/Son_of_Sardaar_2_film_poster.jpg",
+          about: "<p>Details for this movie are coming soon.</p>"
+        },
+        "m8": {
+          title: "Housefull 5", videoSrc: "", rating: 2,
+          poster: "https://static.kinoafisha.info/k/movie_posters/1920x1080/upload/movie_posters/1/4/9/8381941/963553590981.jpg",
+          about: "<p>Details for this movie are coming soon.</p>"
+        },
+        "m9": {
+          title: "Zebra", videoSrc: "", rating: 4,
+          poster: "https://resizing.flixster.com/lwaCdZAN0YeysiQzCkVE7hDN_AQ=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzUzMjg5NTc0LWM2NWYtNGMyYS1hMDEzLWU2MmU1OGYxOTI1ZS5qcGc=",
+          about: "<p>Details for this movie are coming soon.</p>"
+        },
+        "m10": {
+          title: "Spiderman Homecoming",
+          videoSrc: "https://www.youtube.com/embed/n9DwoQ7gPv4",
+          poster: "https://images-cdn.ubuy.co.in/66395b59b1d6e5203868650e-spider-man-homecoming-dvd-sony.jpg",
+          rating: 5,
+          about: "<p>A young Peter Parker/Spider-Man... begins to navigate his newfound identity.</p>"
+        },
+        
+        // --- NEW MOVIES (n1 - n15) ---
+        "n1": {
+          title: "Stranger Things",
+          videoSrc: "https://www.youtube.com/embed/bKCYiVkvE-c",
+          poster: "https://img.etimg.com/thumb/width-1200,height-900,imgsize-86910,resizemode-75,msid-91790403/magazines/panache/stranger-things-season-4-to-have-a-touch-of-horror-new-characters-more-screen-time-for-hopper.jpg",
+          heroImage: "https://wallpapercave.com/wp/wp11730598.jpg",
+          rating: 5,
+          about: "<p><strong>Seasons:</strong> 4</p><p>When a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces, and one strange little girl.</p>"
+        },
+        "n2": {
+          title: "The Witcher",
+          videoSrc: "https://www.youtube.com/embed/ndl1W4ltcmg",
+          poster: "https://m.media-amazon.com/images/M/MV5BYjU1M2Q3OGYtYjQ1Yi00ODFmLTgwYTYtYjU2Y2ZmY2E3NmUwXkEyXkFqcGdeQXVyMTM1MTE1NDI@._V1_.jpg",
+          heroImage: "https://images.cdn.prd.api.discomax.com/2023/07/11/1d713431-a3f5-466d-ad5a-1c002c0c00a9.jpeg",
+          rating: 5,
+          about: "<p><strong>Seasons:</strong> 3</p><p>Geralt of Rivia, a solitary monster hunter, struggles to find his place in a world where people often prove more wicked than beasts.</p>"
+        },
+        "n3": {
+          title: "Dune: Part Two",
+          videoSrc: "https://www.youtube.com/embed/U2Qp5pL3ovA",
+          poster: "https://m.media-amazon.com/images/M/MV5BODg0ZjM0M2ItYTRjYy00MDdlLThhM2UtYjU2N2U1MGIxZjViXkEyXkFqcGdeQXVyMTA3MDk2NDg2._V1_.jpg",
+          rating: 5,
+          about: "<p>Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family.</p>"
+        },
+        "n4": {
+          title: "Oppenheimer",
+          videoSrc: "https://www.youtube.com/embed/bK6ldnjE3Y0",
+          poster: "https://m.media-amazon.com/images/M/MV5BMDBmYTZjNjUtN2M1MS00MTQ2LTk2ODgtNzc2M2QyY2M1N2EwXkEyXkFqcGdeQXVyNzAwMjU2MTY@._V1_.jpg",
+          rating: 5,
+          about: "<p>The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb.</p>"
+        },
+        "n5": {
+          title: "Arcane",
+          videoSrc: "https://www.youtube.com/embed/fXjGTrQQa28",
+          poster: "https://m.media-amazon.com/images/M/MV5BYzQ0YjFkYjYtYjM0My00YjNmLWIyN2YtYmFiM2VmNTVhN2M5XkEyXkFqcGdeQXVyMTkxNjUyNQ@@._V1_.jpg",
+          rating: 5,
+          about: "<p>Set in Utopian Piltover and the oppressed underground of Zaun, the story follows the origins of two iconic League champions-and the power that will tear them apart.</p>"
+        },
+        "n6": {
+          title: "Mad Max: Fury Road",
+          videoSrc: "https://www.youtube.com/embed/hEJnMQG9ev8",
+          poster: "https://m.media-amazon.com/images/M/MV5BN2EwM2I5OWMtMGQyMi00ZGVjLTk1ZWUtYTM0YTAzYmYwNGNkXkEyXkFqcGdeQXVyMTM1MTE1NDI@._V1_.jpg",
+          rating: 5,
+          about: "<p>In a post-apocalyptic wasteland, a woman rebels against a tyrannical ruler in search for her homeland with the help of a group of female prisoners, a psychotic worshiper, and a drifter named Max.</p>"
+        },
+        "n7": {
+          title: "Extraction 2",
+          videoSrc: "https://www.youtube.com/embed/Y274jRgsg0o",
+          poster: "https://m.media-amazon.com/images/M/MV5BODRkMjM5MTQtMzA4Yy00NjkxLWI4MGMtN2RkYjYyMDY2ZTAxXkEyXkFqcGdeQXVyODE5NzE3OTE@._V1_.jpg",
+          rating: 4,
+          about: "<p>After barely surviving his grievous wounds from his mission in Dhaka, Bangladesh, Tyler Rake is back, and his team is ready to take on their next mission.</p>"
+        },
+        "n8": {
+          title: "John Wick: Chapter 4",
+          videoSrc: "https://www.youtube.com/embed/qEVUFLUYGrZ",
+          poster: "https://m.media-amazon.com/images/M/MV5BMDExZGMyOThjYTYwYi00YTAzLWE0ODItYmFiIjgxNzQxYmIxXkEyXkFqcGdeQXVyMDM2NDE2MQ@@._V1_.jpg",
+          rating: 5,
+          about: "<p>John Wick uncovers a path to defeating The High Table. But before he can earn his freedom, Wick must face off against a new enemy with powerful alliances across the globe...</p>"
+        },
+        "n9": {
+          title: "Glass Onion: A Knives Out Mystery",
+          videoSrc: "https://www.youtube.com/embed/gj5IbP-cszs",
+          poster: "https://m.media-amazon.com/images/M/MV5BYmZlZDZkYmQtMDFCYy00N2MwLWIzYmQtYjQxM2Y3MTMxMDU4XkEyXkFqcGdeQXVyMTAyMjQ3NzQ1._V1_.jpg",
+          rating: 4,
+          about: "<p>Famed detective Benoit Blanc travels to Greece for his latest case.</p>"
+        },
+        "n10": {
+          title: "The Hangover",
+          videoSrc: "https://www.youtube.com/embed/tcdxgP_nN4U",
+          poster: "https://m.media-amazon.com/images/M/MV5BMTM2OTYwMTY2NF5BMl5BanBnXkFtZTcwNTE3OTc0Mw@@._V1_.jpg",
+          rating: 4,
+          about: "<p>Three buddies wake up from a bachelor party in Las Vegas, with no memory of the previous night and the bachelor missing.</p>"
+        },
+        "n11": {
+          title: "Free Guy",
+          videoSrc: "https://www.youtube.com/embed/X2m-08cOAbc",
+          poster: "https://m.media-amazon.com/images/M/MV5BOTY2NzF0MTEtYTRhYi00YjY4LWIyYmQtZDI0YjY1Y2M0NDg1XkEyXkFqcGdeQXVyMDM2NDE2MQ@@._V1_.jpg",
+          rating: 4,
+          about: "<p>A bank teller discovers he is actually a background player in an open-world video game, and decides to become the hero of his own story.</p>"
+        },
+        "n12": {
+          title: "RRR",
+          videoSrc: "https://www.youtube.com/embed/CgmfyB4cOQ",
+          poster: "https://m.media-amazon.com/images/M/MV5BODUwNDNjM2MtNGY0MC00M2NhLWFiYjUtMjc1Y2E5NTVjMjBkXkEyXkFqcGdeQXVyMTU0ODI4MQ@@._V1_.jpg",
+          rating: 5,
+          about: "<p>A fictitious story about two legendary revolutionaries and their journey away from home before they started fighting for their country in the 1920s.</p>"
+        },
+        "n13": {
+          title: "The Queen's Gambit",
+          videoSrc: "https://www.youtube.com/embed/oWs3YIupmfo",
+          poster: "https://m.media-amazon.com/images/M/MV5BM2M0MWEwY2MtN2VjYy00YzA3LWIzYjEtN2UxYjA3N2YyYjY4XkEyXkFqcGdeQXVyMTkxNjUyNQ@@._V1_.jpg",
+          rating: 5,
+          about: "<p>Orphaned at the tender age of nine, prodigious introvert Beth Harmon discovers and masters the game of chess in 1960s USA. But child stardom comes at a price.</p>"
+        },
+        "n14": {
+          title: "Black Mirror",
+          videoSrc: "https://www.youtube.com/embed/5jY1-tz2i6M",
+          poster: "https://m.media-amazon.com/images/M/MV5BZWJkYmJjYWYtYWRjYy00MTE2LWJjYjQtMGM0NWI4Y2I1N2YxXkEyXkFqcGdeQXVyNTE1NjY5Mg@@._V1_.jpg",
+          rating: 5,
+          about: "<p>An anthology series exploring a twisted, high-tech multiverse where humanity's greatest innovations and darkest instincts collide.</p>"
+        },
+        "n15": {
+          title: "Panchayat",
+          videoSrc: "https://www.youtube.com/embed/mojZJ7_Qj5g",
+          poster: "https://m.media-amazon.com/images/M/MV5BMTY0NDA3MzA1NV5BMl5BanBnXkFtZTgwNzYwMDI2NzM@._V1_.jpg",
+          rating: 5,
+          about: "<p>A comedy-drama, which captures the journey of an engineering graduate Abhishek, who for lack of a better job option joins as secretary of a Panchayat office in a remote village of Uttar Pradesh.</p>"
+        }
+    };
+    
+    // --- THIS SCRIPT AUTO-GENERATES 100 DUMMY MOVIES ---
+    // This is how we get to 120+ movies instantly
+    (function generateDummyData() {
+        for (let i = 1; i <= 100; i++) {
+            const id = `d${i}`;
+            movieData[id] = {
+                title: `Dummy Movie ${i}`,
+                videoSrc: "",
+                poster: `https://via.placeholder.com/260x146.png/333/808080?text=Movie+${i}`,
+                rating: Math.floor(Math.random() * 3) + 3, // Random 3-5 stars
+                about: `<p>Details for this auto-generated movie (${i}) are coming soon. This is a placeholder to show a large library.</p>`
+            };
+        }
+    })();
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+      
+      // --- DYNAMICALLY BUILD THE PAGE ---
+
+      const browseContainer = document.getElementById('browse-container');
+
+      // This function creates one full movie row
+      function createMovieRow(title, movieIds) {
+        const row = document.createElement('div');
+        row.className = 'movie-row';
+        
+        const titleEl = document.createElement('h2');
+        titleEl.textContent = title;
+        row.appendChild(titleEl);
+        
+        const wrapper = document.createElement('div');
+        wrapper.className = 'carousel-wrapper';
+        
+        const container = document.createElement('div');
+        container.className = 'scroll-container';
+        
+        // Add movies to the scroll container
+        for (const id of movieIds) {
+          const movie = movieData[id];
+          if (movie) {
+            const poster = document.createElement('div');
+            poster.className = 'movie-poster';
+            poster.dataset.movieId = id; // Store the ID
+            
+            const img = document.createElement('img');
+            img.src = movie.poster;
+            img.alt = movie.title;
+            poster.appendChild(img);
+            
+            container.appendChild(poster);
+          }
+        }
+        
+        // Add scroll buttons
+        const leftBtn = document.createElement('button');
+        leftBtn.className = 'scroll-btn left';
+        leftBtn.innerHTML = '&#8249;';
+        
+        const rightBtn = document.createElement('button');
+        rightBtn.className = 'scroll-btn right';
+        rightBtn.innerHTML = '&#8250;';
+        
+        // Add all pieces to the row
+        wrapper.appendChild(container);
+        wrapper.appendChild(leftBtn);
+        wrapper.appendChild(rightBtn);
+        row.appendChild(wrapper);
+        
+        // Add the full row to the page
+        browseContainer.appendChild(row);
+      }
+
+      // Define which movies go in which row
+      // We are mixing your movies (m1-m10) with the new ones (n1-n15)
+      createMovieRow('Trending Now', ['m1', 'n3', 'n5', 'm2', 'n7', 'm4', 'n1', 'm10']);
+      createMovieRow('New Releases', ['n4', 'm3',s 'm6', 'n8', 'm5', 'n12', 'm9']);
+      createMovieRow('Your Top 10', ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10']);
+      createMovieRow('Indian Hits', ['n15', 'm1', 'n12', 'm6', 'm2']);
+      createMovieRow('Hollywood Blockbusters', ['n3', 'n4', 'n6', 'n7', 'n8', 'm10', 'n11']);
+      createMovieRow('Binge-worthy TV', ['n1', 'n2', 'n5', 'n13', 'n14', 'n15']);
+      createMovieRow('Comedies', ['n9', 'n10', 'n11', 'm8', 'n15']);
+      
+      // Now we use the 100 dummy movies to fill the page
+      const dummyIds = Object.keys(movieData).filter(id => id.startsWith('d'));
+      createMovieRow('Recently Added', dummyIds.slice(0, 20));
+      createMovieRow('Sci-Fi & Fantasy', dummyIds.slice(20, 40));
+      createMovieRow('Documentaries', dummyIds.slice(40, 60));
+      createMovieRow('Thrillers', dummyIds.slice(60, 80));
+      createMovieRow('Watch Again', dummyIds.slice(80, 100));
+
+
+      // --- INITIALIZE ALL PAGE FUNCTIONALITY ---
+
+      // 1. Navbar Scroll Effect
+      const navbar = document.getElementById('navbar');
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+          navbar.classList.add('scrolled');
+        } else {
+          navbar.classList.remove('scrolled');
+        }
+      });
+
+      // 2. Initialize Hero
+      const heroSection = document.getElementById('hero-section');
+      const heroTitle = document.getElementById('hero-title');
+      const heroDesc = document.getElementById('hero-description');
+      const heroInfoBtn = document.getElementById('hero-info-btn');
+      
+      const heroMovie = movieData['n2']; // The Witcher
+      heroSection.style.backgroundImage = `url('${heroMovie.heroImage}')`;
+      heroTitle.textContent = heroMovie.title;
+      heroDesc.textContent = heroMovie.about.replace(/<[^>]*>/g, ''); // Remove HTML
+      heroInfoBtn.dataset.movieId = 'n2'; // Link button to The Witcher
+
+
+      // 3. Initialize ALL Carousels (This is an upgrade from your old script)
+      const allRows = document.querySelectorAll('.movie-row');
+      allRows.forEach(row => {
+        const scrollContainer = row.querySelector('.scroll-container');
+        const leftBtn = row.querySelector('.scroll-btn.left');
+        const rightBtn = row.querySelector('.scroll-btn.right');
+        
+        if (scrollContainer && leftBtn && rightBtn) {
+          rightBtn.addEventListener('click', () => {
+            const scrollAmount = scrollContainer.clientWidth * 0.8;
+            scrollContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+          });
+
+          leftBtn.addEventListener('click', () => {
+            const scrollAmount = scrollContainer.clientWidth * 0.8;
+            scrollContainer.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+          });
+          
+          // Note: We're not hiding buttons here, but you could add that logic
+        }
+      });
+
+      // 4. Initialize Modal (Copied from your script, but now works for ANY poster)
+      const modalOverlay = document.getElementById('movie-modal');
+      const modalCloseBtn = document.getElementById('modal-close-btn');
+      const modalVideo = document.getElementById('modal-video');
+      const modalTitle = document.getElementById('modal-title');
+      const modalStars = document.getElementById('modal-stars');
+      const modalAbout = document.getElementById('modal-about');
+
+      function openModal(data) {
+        modalTitle.textContent = data.title;
+        modalVideo.src = data.videoSrc + "?autoplay=1"; 
+        modalAbout.innerHTML = data.about;
+        
+        let starsHTML = '';
+        for (let i = 0; i < 5; i++) {
+          starsHTML += (i < data.rating) ? '&#9733;' : '&#9734;';
+        }
+        modalStars.innerHTML = starsHTML;
+
+        modalOverlay.classList.add('active');
+        document.body.classList.add('modal-open');
+      }
+
+      function closeModal() {
+        modalOverlay.classList.remove('active');
+        document.body.classList.remove('modal-open');
+        modalVideo.src = "";
+      }
+
+      // Add click listener to ALL movie posters on the page
+      const allMoviePosters = document.querySelectorAll('.movie-poster');
+      allMoviePosters.forEach(item => {
+        item.addEventListener('click', () => {
+          const movieId = item.dataset.movieId;
+          const data = movieData[movieId];
+          if (data) {
+            openModal(data);
+          }
+        });
+      });
+      
+      // Add click listener to the Hero 'More Info' button
+      heroInfoBtn.addEventListener('click', () => {
+          const movieId = heroInfoBtn.dataset.movieId;
+          const data = movieData[movieId];
+          if (data) {
+            openModal(data);
+          }
+      });
+
+      modalCloseBtn.addEventListener('click', closeModal);
+      modalOverlay.addEventListener('click', (event) => {
+        if (event.target === modalOverlay) {
+          closeModal();
+        }
+      });
+
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Netflix Clone</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css?family=Helvetica:400,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  
+  <style>
+    @keyframes backgroundGlow {
+      0% {
+        box-shadow: 0 0 1500px 450px rgba(138, 43, 226, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 2000px 600px rgba(138, 43, 226, 0.5);
+      }
+      100% {
+        box-shadow: 0 0 1500px 450px rgba(138, 43, 226, 0.3);
+      }
+    }
+
+    @keyframes cardGlowOptimistic {
+      0%, 100% {
+        border: 1px solid rgba(138, 43, 226, 0.2);
+        box-shadow: 0 0 15px rgba(138, 43, 226, 0.2), 0 0 30px rgba(138, 43, 226, 0.08);
+      }
+      50% {
+        border: 1px solid rgba(138, 43, 226, 0.4);
+        box-shadow: 0 0 25px rgba(138, 43, 226, 0.4), 0 0 50px rgba(138, 43, 226, 0.15);
+      }
+    }
+
+    body {
+      margin: 0;
+      background: #141414;
+      color: #fff;
+      font-family: 'Helvetica', Arial, sans-serif;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    body.modal-open {
+        overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1px;
+      height: 1px;
+      animation: backgroundGlow 15s infinite alternate ease-in-out;
+      z-index: -1;
+    }
+
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 60px;
+      height: 80px;
+      background: rgba(20, 20, 20, 0.85);
+      position: sticky; 
+      top: 0;
+      z-index: 10;
+    }
+    .navbar img {
+      height: 36px;
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .nav-link-translucent {
+      background: rgba(0, 0, 0, 0.4); 
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: rgba(255, 255, 255, 0.9);
+      padding: 8px 16px;
+      border-radius: 2px;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+
+    .nav-link-translucent:hover {
+      background: rgba(20, 20, 20, 0.7);
+    }
+
+    .navbar .signin-btn {
+      background: #e50914;
+      color: #fff;
+      border: none;
+      border-radius: 2px;
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    .hero {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 540px;
+      background: url('https://moviepedia1.epizy.com/wp-content/uploads/2022/08/Untitled-design-33-Edited-1.png') center center/cover no-repeat;
+      text-align: center;
+      position: relative;
+    }
+    
+    .overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(20, 20, 20, 0.65);
+      z-index: 1;
+    }
+    
+    .hero-content {
+      z-index: 2;
+      position: relative;
+      padding: 0 20px;
+    }
+    .hero h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+    .hero h2 {
+      font-size: 1.7rem;
+      font-weight: 400;
+      margin-bottom: 18px;
+    }
+    .hero p {
+      font-size: 1.3rem;
+      margin-bottom: 24px;
+    }
+    .hero .email-form {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+    .email-input {
+      padding: 12px;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 2px;
+      width: 300px;
+      max-width: 90vw;
+      outline: none;
+    }
+    .get-started-btn {
+      background: #e50914; 
+      color: #fff;
+      border: none;
+      border-radius: 2px;
+      font-size: 1.2rem;
+      padding: 12px 26px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+    .get-started-btn:hover {
+      background: #f40612;
+    }
+
+    .trending-section {
+      padding: 40px 0 60px 0;
+      background: #0d0d0d;
+      border-top: 8px solid #222;
+      position: relative; 
+    }
+
+    .trending-section h2 {
+      font-size: 2rem;
+      margin: 0 0 20px 4%;
+      color: #fff;
+    }
+    
+    .trending-wrapper {
+        position: relative;
+    }
+
+    .scroll-container {
+      display: flex;
+      overflow-x: scroll;
+      padding: 0 4%;
+      gap: 12px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      scroll-behavior: smooth; 
+    }
+
+    .scroll-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .scroll-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 5;
+      background: rgba(20, 20, 20, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      font-size: 2.5rem;
+      font-weight: bold;
+      cursor: pointer;
+      height: 100px;
+      width: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      line-height: 1;
+      padding-bottom: 5px;
+      border-radius: 4px;
+    }
+    .scroll-btn:hover {
+      background: rgba(20, 20, 20, 0.9);
+    }
+    .scroll-btn.left {
+      left: 10px;
+    }
+    .scroll-btn.right {
+      right: 10px;
+    }
+
+    .trending-item {
+      flex: 0 0 auto;
+      width: 180px;
+      height: 300px;
+      position: relative;
+      scroll-snap-align: start;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    
+    .trending-item:hover {
+      transform: scale(1.05);
+      z-index: 5;
+    }
+
+    .trending-poster {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 4px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .trending-number {
+      position: absolute;
+      bottom: -10px;
+      left: -15px;
+      font-size: 6rem;
+      font-weight: 900;
+      color: transparent;
+      -webkit-text-stroke: 4px #fff;
+      opacity: 0.9;
+      line-height: 1;
+      z-index: 2;
+      pointer-events: none;
+    }
+    
+    .trending-title {
+        font-family: 'Poppins', sans-serif; 
+        position: absolute;
+        bottom: 10px;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        font-size: 0.9rem; 
+        font-weight: 700; 
+        color: #fff;
+        z-index: 3;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.8); 
+        padding: 0 5px;
+        box-sizing: border-box; 
+        pointer-events: none;
+    }
+    
+    .features-section {
+      background: #141414;
+      padding: 60px 4%;
+      text-align: left;
+      border-top: 8px solid #222;
+    }
+
+    .features-section h2 {
+      font-size: 2.5rem;
+      margin-bottom: 40px;
+      padding-left: 20px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .feature {
+      background: #1c1c1c;
+      border-radius: 12px;
+      padding: 30px 40px;
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      animation: cardGlowOptimistic 6s infinite alternate ease-in-out;
+    }
+
+    .feature h3 {
+      font-size: 1.5rem;
+      margin: 0 0 10px 0;
+      font-weight: 700;
+    }
+    .feature p {
+      font-size: 1.1rem;
+      color: #b0b0b0;
+      max-width: 70%;
+    }
+
+    .feature-icon {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 120px;
+      height: auto;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .feature-icon.tv { width: 150px; bottom: 0px; right: 10px; }
+    .feature-icon.download { width: 100px; bottom: 20px; right: 20px; }
+    .feature-icon.watch { width: 120px; bottom: 10px; right: 15px; }
+    .feature-icon.kids { width: 120px; bottom: 15px; right: 15px; }
+
+    .faq {
+      background: #181818;
+      color: #fff;
+      padding: 48px 20px;
+      text-align: center;
+      border-top: 8px solid #222;
+    }
+    .faq h2 {
+      margin-bottom: 24px;
+      font-size: 2rem;
+    }
+    .faq-item {
+      margin-bottom: 18px;
+      text-align: left;
+      max-width: 600px;
+      margin: 18px auto;
+      background: #222;
+      border-radius: 8px;
+      padding: 18px;
+    }
+    .faq-item h4 {
+      margin: 0 0 8px 0;
+      font-weight: 600;
+    }
+    .faq-item p {
+      margin: 0;
+      font-size: 1rem;
+      color: #bcbcbc;
+    }
+    
+    .footer {
+      background: #181818;
+      color: #757577;
+      padding: 40px 0;
+      text-align: center;
+      border-top: 8px solid #222;
+    }
+    .footer-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .footer-links {
+      list-style: none;
+      padding: 0;
+      margin: 18px 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    .footer-links a {
+      color: #757575;
+      text-decoration: none;
+      font-size: 0.98rem;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover {
+      color: #fff;
+    }
+    
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    .modal-content {
+        background: #1c1c1c;
+        border-radius: 8px;
+        width: 80%;
+        max-width: 1100px;
+        height: 60vh;
+        display: flex;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(138, 43, 226, 0.4);
+        box-shadow: 0 0 40px rgba(138, 43, 226, 0.5);
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+    }
+    .modal-overlay.active .modal-content {
+        transform: scale(1);
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 2.5rem;
+        font-weight: bold;
+        background: none;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        z-index: 1002;
+        line-height: 1;
+        transition: transform 0.2s;
+    }
+    .modal-close:hover {
+        transform: scale(1.1);
+        color: #e50914;
+    }
+
+    .modal-left {
+        flex: 1.5;
+        background: #000;
+    }
+    .modal-right {
+        flex: 1;
+        padding: 25px;
+        overflow-y: auto;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .modal-video {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+    
+    .modal-info h3 {
+        font-size: 1.8rem;
+        margin-top: 0;
+        margin-bottom: 15px;
+    }
+    .modal-info h4 {
+        font-size: 1.2rem;
+        margin-top: 20px;
+        margin-bottom: 10px;
+        color: #b0b0b0;
+    }
+    .modal-info p {
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: #b0b0b0;
+        margin-bottom: 15px;
+    }
+    .modal-info .rating .stars {
+        font-size: 1.5rem;
+        color: #f3c623;
+    }
+
+
+    @media (max-width: 1000px) {
+        .features-grid {
+            grid-template-columns: 1fr;
+            padding: 0 20px;
+        }
+        .features-section h2 {
+            text-align: center;
+            padding-left: 0;
+        }
+        .feature {
+            max-width: 100%;
+            padding: 25px 30px;
+        }
+        .feature h3 {
+            font-size: 1.3rem;
+        }
+        .feature p {
+            font-size: 1rem;
+            max-width: 80%;
+        }
+        .feature-icon {
+            width: 80px;
+            bottom: 15px;
+            right: 15px;
+        }
+        .feature-icon.tv { width: 100px; bottom: 0px; right: 5px; }
+
+        .trending-item {
+            width: 150px;
+            height: 250px;
+        }
+        .trending-number {
+            font-size: 5rem;
+        }
+        .scroll-btn {
+            height: 80px;
+            width: 40px;
+            font-size: 2rem;
+        }
+        
+        .modal-content {
+            flex-direction: column;
+            width: 90%;
+            height: 80vh;
+        }
+        .modal-left {
+            flex: 1;
+            min-height: 250px;
+        }
+        .modal-right {
+            flex: 1;
+        }
+    }
+
+    @media (max-width: 700px) {
+      .navbar {
+        padding: 0 18px;
+        height: 60px;
+      }
+      
+      .navbar-right {
+        gap: 10px;
+      }
+      .nav-link-translucent {
+        padding: 6px 10px;
+        font-size: 14px;
+      }
+      .navbar .signin-btn {
+        padding: 6px 10px;
+        font-size: 14px;
+      }
+
+      .hero h1 {
+        font-size: 2rem;
+      }
+      .hero h2 {
+        font-size: 1.1rem;
+      }
+      .hero p {
+        font-size: 1rem;
+      }
+      .faq-item {
+        max-width: 95vw;
+      }
+
+      .scroll-btn {
+          display: none;
+      }
+      .h3{
+        border: #181818;
+        size-adjust: inherit;
+        size: 0cqmax;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="navbar">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix logo">
+    
+    <div class="navbar-right">
+      <a href="faq.html" class="nav-link-translucent">FAQ</a>
+      <a href="faq.html" class="nav-link-translucent">Help Center</a>
+      <button class="signin-btn" onclick="window.location.href='signin.html'">Sign In</button>
+    </div>
+  </div>
+
+  <section class="hero">
+    <div class="overlay"></div>
+    <div class="hero-content">
+      <h1>Unlimited movies, TV shows and more</h1>
+      <h2>Watch anywhere. Cancel anytime.</h2>
+      <p>Ready to watch? Enter your email to create or restart your membership.</p>
+      <form class="email-form">
+        <input class="email-input" type="email" placeholder="Email address" required>
+        <button class="get-started-btn">Get Started &gt;</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="trending-section">
+    <h2>Trending Now</h2>
+    <div class="trending-wrapper">
+        <button class="scroll-btn left" id="scroll-left">&#8249;</button>
+
+        <div class="scroll-container" id="trending-scroll">
+      
+          <div class="trending-item" data-movie-id="movie1">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTWrIFfFfObNqbFBv7FevSl0TfrGuvu51KoVA&s" alt="Saiyaara poster" class="trending-poster">
+            <span class="trending-number">1</span>
+            <span class="trending-title">Saiyaara</span>
+          </div>
+          <div class="trending-item" data-movie-id="movie2">
+            <img src=" https://content.tupaki.com/en/feeds/2025/03/01/714323-whatsappimage2025-03-01at1923374daf898d.webp" alt="Good Bad Ugly poster" class="trending-poster">
+            <span class="trending-number">2</span>
+            <span class="trending-title">Good Bad Ugly</span>
+          </div>
+          <div class="trending-item" data-movie-id="movie3">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS85i0wbv8XouZy_zQNcGztq6Y-bcaQ3922C97bhUucOuQi8oKa673kCix4KeE1MGIndJA&usqp=CAU" alt="War 2 poster" class="trending-poster">
+            <span class="trending-number">3</span>
+            <span class="trending-title">War 2</span>
+          </div>
+          <div class="trending-item" data-movie-id="movie4">
+            <img src=" https://m.media-amazon.com/images/M/MV5BOTI4YWMzOGYtODkzYS00NTEyLWFmMzYtMzJkOGZmOWZlNThhXkEyXkFqcGc@._V1_.jpg" alt="Raid 2 poster" class="trending-poster">
+            <span class="trending-number">4</span>
+            <span class="trending-title">Raid 2</span>
+          </div>
+          <div class="trending-item" data-movie-id="movie5">
+            <img src=" https://assets-in.bmscdn.com/iedb/movies/images/mobile/thumbnail/xlarge/thamma-et00443268-1759421603.jpg" alt="Thamma poster" class="trending-poster">
+            <span class="trending-number">5</span>
+            <span class="trending-title">Thamma</span>
+          </div>
+          <div class="trending-item" data-movie-id="movie6">
+            <img src=" https://m.media-amazon.com/images/M/MV5BNDU2ZTYxYTMtMjhlZC00ZjEwLThhNDUtMzdlNWM4ZDcyYTM1XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg" alt="Kantara-Chp 1 poster" class="trending-poster">
+            <span class="trending-number">6</span>
+            <span class="trending-title">Kantara-Chp 1</span>
+          </div>
+          <div class="trending-item" data-movie-id="movie7">
+            <img src=" https://upload.wikimedia.org/wikipedia/en/4/41/Son_of_Sardaar_2_film_poster.jpg" alt="Son of Sardaar 2 poster" class="trending-poster">
+            <span class="trending-number">7</span>
+            <span class="trending-title">Son of Sardaar 2</span>
+          </div>
+          <div class="trending-item" data-movie-id="movie8">
+            <img src="https://static.kinoafisha.info/k/movie_posters/1920x1080/upload/movie_posters/1/4/9/8381941/963553590981.jpg" alt="Housefull 5 poster" class="trending-poster">
+            <span class="trending-number">8</span>
+            <span class="trending-title">Housefull 5</span>
+          </div>
+          <div class="trending-item" data-movie-id="movie9">
+            <img src="https://resizing.flixster.com/lwaCdZAN0YeysiQzCkVE7hDN_AQ=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzUzMjg5NTc0LWM2NWYtNGMyYS1hMDEzLWU2MmU1OGYxOTI1ZS5qcGc=" alt="Zebra poster" class="trending-poster">
+            <span class="trending-number">9</span>
+            <span class="trending-title">Zebra</span>
+          </div>
+          <div class="trending-item" data-movie-id="movie10">
+            <img src=" https://images-cdn.ubuy.co.in/66395b59b1d6e5203868650e-spider-man-homecoming-dvd-sony.jpg" alt="Spiderman Homecoming poster" class="trending-poster">
+            <span class="trending-number">10</span>
+            <span class="trending-title">Spiderman Homecoming</span>
+          </div>
+
+        </div>
+        <button class="scroll-btn right" id="scroll-right">&#8250;</button>
+    </div>
+  </section>
+
+  <section class="features-section">
+    <h2>More reasons to join</h2>
+    <div class="features-grid">
+      <div class="feature">
+        <h3>Enjoy on your TV</h3>
+        <p>Watch on smart TVs, PlayStation, Xbox, Chromecast, Apple TV, Blu-ray players and more.</p>
+        <img src="https://assets.nflxext.com/ffe/siteui/acquisition/ourStory/fuji/desktop/tv.png" alt="TV icon" class="feature-icon tv">
+      </div>
+      <div class="feature">
+        <h3>Download your shows to watch offline</h3>
+        <p>Save your favourites easily and always have something to watch.</p>
+        <img src="https://upload.wikimedia.org/wikipedia/en/7/79/Pushpa_Impossible.jpg" alt="Download icon" class="feature-icon download">
+      </div>
+      <div class="feature">
+        <h3>Watch everywhere</h3>
+        <p>Stream unlimited movies and TV shows on your phone, tablet, laptop, and TV.</p>
+        <img src="https://assets.nflxext.com/ffe/siteui/acquisition/ourStory/fuji/desktop/device-pile.png" alt="Devices icon" class="feature-icon watch">
+      </div>
+      <div class="feature">
+        <h3>Create profiles for kids</h3>
+        <p>Send kids on adventures with their favourite characters in a space made just for them — free with your membership.</p>
+        <img src=" https://i.ytimg.com/vi/moSYPpn7pOY/maxresdefault.jpg" alt="Kids profiles icon" class="feature-icon kids">
+      </div>
+    </div>
+  </section>
+
+  <section class="faq">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-item">
+      <h4>What is Netflix?</h4>
+      <p>Netflix is a streaming service offering a wide variety of award-winning TV shows, movies, anime, documentaries and more.</p>
+    </div>
+    <div class="faq-item">
+      <h4>How much does Netflix cost?</h4>
+      <p>Plans range from ₹199 to ₹649 a month. No extra costs, no contracts.</p>
+    </div>
+    <div class="faq-item">
+      <h4>Where can I watch?</h4>
+      <p>You can watch anywhere, anytime – on an unlimited number of devices.</p>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <p>Questions? Call <a href="tel:000-800-919-1694">000-800-919-1694</a></p>
+      <ul class="footer-links">
+        <li><a href="#">FAQ</a></li>
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">Terms of Use</a></li>
+        <li><a href="#">Privacy</a></li>
+        <li><a href="#">Cookie Preferences</a></li>
+        <li><a href="#">Corporate Information</a></li>
+      </ul>
+      <p>Netflix India</p>
+    </div>
+  </footer>
+
+  <div id="movie-modal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close" id="modal-close-btn">&times;</button>
+        <div class="modal-left">
+            <iframe 
+                id="modal-video"
+                class="modal-video" 
+                src="" 
+                title="YouTube video player" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen>
+            </iframe>
+        </div>
+        <div class="modal-right">
+            <div class="modal-info">
+                <h3 id="modal-title">Movie Title</h3>
+                <div class="rating">
+                    <h4>RATING</h4>
+                    <div class="stars" id="modal-stars">
+                    </div>
+                </div>
+                <h4>ABOUT</h4>
+                <div id="modal-about">
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const scrollContainer = document.getElementById('trending-scroll');
+      const leftBtn = document.getElementById('scroll-left');
+      const rightBtn = document.getElementById('scroll-right');
+
+      if (scrollContainer && leftBtn && rightBtn) {
+        function checkScrollButtons() {
+          if (scrollContainer.scrollLeft <= 0) {
+            leftBtn.style.display = 'none';
+          } else {
+            leftBtn.style.display = 'flex';
+          }
+          const maxScrollLeft = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+          if (scrollContainer.scrollLeft >= maxScrollLeft - 1) { 
+            rightBtn.style.display = 'none';
+          } else {
+            rightBtn.style.display = 'flex';
+          }
+        }
+
+        rightBtn.addEventListener('click', () => {
+          const scrollAmount = scrollContainer.clientWidth * 0.8;
+          scrollContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        });
+
+        leftBtn.addEventListener('click', () => {
+          const scrollAmount = scrollContainer.clientWidth * 0.8;
+          scrollContainer.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        });
+
+        scrollContainer.addEventListener('scroll', checkScrollButtons);
+        checkScrollButtons();
+        setTimeout(checkScrollButtons, 500);
+      }
+
+      const movieData = {
+          "movie1": {
+              title: "Saiyaara",
+              videoSrc: "https://www.youtube.com/embed/9r-tT5IN0vg",
+              rating: 5,
+              about: `
+                  <p><strong>Director:</strong> Mohit Suri.</p>
+                  <p><strong>Plot:</strong> A music-driven romance between a rising musician (Krish) and a poet (Vaani) whose lives intertwine when Krish discovers Vaani’s lyrics and turns them into hits — but their love is tested by illness and sacrifice.</p>
+                  <p><strong>Background & notes:</strong> Produced by Yash Raj Films, and the debut of Ahaan Panday & Aneet Padda. It’s reported to have broken box-office records for a romantic film in India.</p>
+                  <p><strong>Storyline:</strong> “Two artistic souls find harmony through music despite their contrasting worlds. As feelings deepen, age and circumstances challenge their undeniable bond.”</p>
+              `
+          },
+          "movie2": {
+              title: "Good Bad Ugly",
+              videoSrc: "https://www.youtube.com/embed/XkLRfH1oF3I",
+              rating: 4,
+              about: `
+                  <p><strong>Director:</strong> Adhik Ravichandran.</p>
+                  <p><strong>Plot:</strong> After spending years in prison, a former gangster seeks to leave that life behind, but when his son is framed and jailed, he must return to his violent past to save him.</p>
+                  <p><strong>Background:</strong> Tamil-language action film starring Ajith Kumar and Trisha Krishnan. The film is high-on style and star power though reviews say the second half falters.</p>
+                  <p><strong>Storyline:</strong> “When his son is falsely jailed for a crime he didn’t commit, a feared gangster who has reformed his ways decides to take up his violent ways once again to save the boy and have his revenge.”</p>
+              `
+          },
+          "movie3": {
+              title: "War 2",
+              videoSrc: "https://www.youtube.com/embed/6Wy-Du0iHHU",
+              rating: 5,
+              about: `
+                  <p><strong>Director:</strong> Ayan Mukerji.</p>
+                  <p><strong>Plot:</strong> The next chapter in the YRF Spy Universe. A former top agent (Kabir) has gone rogue and his former ally is sent after him, leading to a high-stakes global mission with betrayal, double games and state-level espionage.</p>
+                  <p><strong>Background:</strong> Big budget (reported ₹300-400 crore), multi-language release. “Returning as Major Kabir Dhaliwal, Hrithik Roshan resumes his role as the dashing yet deadly spy… In War 2, Kabir is thrust into an even more perilous undercover mission that spans multiple continents…”</p>
+              `
+          },
+          "movie4": { title: "Raid 2", videoSrc: "", rating: 4, about: "<p>Details for this movie are coming soon.</p>" },
+          "movie5": { title: "Thamma", videoSrc: "", rating: 5, about: "<p>Details for this movie are coming soon.</p>" },
+          "movie6": { title: "Kantara-Chp 1", videoSrc: "", rating: 5, about: "<p>Details for this movie are coming soon.</p>" },
+          "movie7": { title: "Son of Sardaar 2", videoSrc: "", rating: 3, about: "<p>Details for this movie are coming soon.</p>" },
+          "movie8": { title: "Housefull 5", videoSrc: "", rating: 2, about: "<p>Details for this movie are coming soon.</p>" },
+          "movie9": { title: "Zebra", videoSrc: "", rating: 4, about: "<p>Details for this movie are coming soon.</p>" },
+          "movie10": { title: "Spiderman Homecoming", videoSrc: "https://www.youtube.com/embed/n9DwoQ7gPv4", rating: 5, about: "<p>A young Peter Parker/Spider-Man, who made his sensational debut in Captain America: Civil War, begins to navigate his newfound identity as the web-slinging super hero in Spider-Man: Homecoming.</p>" }
+      };
+
+      const modalOverlay = document.getElementById('movie-modal');
+      const modalCloseBtn = document.getElementById('modal-close-btn');
+      const modalVideo = document.getElementById('modal-video');
+      const modalTitle = document.getElementById('modal-title');
+      const modalStars = document.getElementById('modal-stars');
+      const modalAbout = document.getElementById('modal-about');
+      
+      const movieItems = document.querySelectorAll('.trending-item');
+
+      movieItems.forEach(item => {
+          item.addEventListener('click', () => {
+              const movieId = item.dataset.movieId;
+              const data = movieData[movieId];
+
+              if (data) {
+                  openModal(data);
+              }
+          });
+      });
+
+      function openModal(data) {
+          modalTitle.textContent = data.title;
+          modalVideo.src = data.videoSrc + "?autoplay=1"; 
+          modalAbout.innerHTML = data.about;
+          
+          let starsHTML = '';
+          for (let i = 0; i < 5; i++) {
+              if (i < data.rating) {
+                  starsHTML += '&#9733;'; 
+              } else {
+                  starsHTML += '&#9734;'; 
+              }
+          }
+          modalStars.innerHTML = starsHTML;
+
+          modalOverlay.classList.add('active');
+          document.body.classList.add('modal-open');
+      }
+
+      function closeModal() {
+          modalOverlay.classList.remove('active');
+          document.body.classList.remove('modal-open');
+          modalVideo.src = "";
+      }
+
+      modalCloseBtn.addEventListener('click', closeModal);
+      modalOverlay.addEventListener('click', (event) => {
+          if (event.target === modalOverlay) {
+              closeModal();
+          }
+      });
+
+    });
+  </script>
+
+</body>
+</html>
